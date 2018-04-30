@@ -7,8 +7,6 @@ import (
 	"github.com/rtt/Go-Solr"
 )
 
-const defaultWeightField = "count_i"
-
 // SuggestionTerm represents a suggestion_terms document.
 type SuggestionTerm struct {
 	Field       string
@@ -20,7 +18,6 @@ type SuggestionTerm struct {
 // SuggestionTermCollection represents a collection of suggestion_terms documents
 type SuggestionTermCollection struct {
 	SuggestionTerms []SuggestionTerm
-	WeightField     string
 }
 
 // NewSuggestionTerm creates a SuggestionTerm from a facet name and FacentCount object
@@ -43,6 +40,7 @@ func (st *SuggestionTerm) NewDocument() *solr.Document {
 	return &solr.Document{Fields: map[string]interface{}{
 		"id":           st.DocumentID(),
 		"term_s":       map[string]string{"set": st.Value},
+		"term_type_s":  map[string]string{"set": st.Field},
 		st.WeightField: map[string]int{"set": st.Count},
 	}}
 }

@@ -200,11 +200,13 @@ func TestToUpdateDocuments(t *testing.T) {
 			map[string]interface{}{
 				"id":            "pseudotiers_ss.lighting",
 				"term_s":        map[string]string{"set": "lighting"},
+				"term_type_s":   map[string]string{"set": "pseudotiers_ss"},
 				"brand_count_i": map[string]int{"set": 100},
 			},
 			map[string]interface{}{
 				"id":            "pseudotiers_ss.plumbing",
 				"term_s":        map[string]string{"set": "plumbing"},
+				"term_type_s":   map[string]string{"set": "pseudotiers_ss"},
 				"brand_count_i": map[string]int{"set": 100},
 			},
 		},
