@@ -33,16 +33,6 @@ func NewSuggestionTerm(facetName string, facetCount solr.FacetCount, weightField
 	return st
 }
 
-// NewSuggestionTermCollection creates a SuggestionTermCollection and returns the ptr.
-func NewSuggestionTermCollection(weightField string) *SuggestionTermCollection {
-	if weightField == "" {
-		weightField = defaultWeightField
-	}
-	collection := new(SuggestionTermCollection)
-	collection.WeightField = weightField
-	return collection
-}
-
 // DocumentID returns a Solr document id for a SuggestionTerm
 func (st *SuggestionTerm) DocumentID() string {
 	return fmt.Sprint(st.Field, ".", st.Value)
@@ -83,4 +73,16 @@ func (collection *SuggestionTermCollection) ToUpdateDocument() map[string]interf
 	}
 
 	return payload
+}
+
+// MakeFacetQuery constructs a Solr facet query
+func MakeFacetQuery(fq []string, facetField []string) solr.Query {
+	return solr.Query{
+		Params: solr.URLParamMap{
+			"q":           []string{"*:*"},
+			"fq":          fq,
+			"facet.field": facetField,
+			"facet":       []string{"true"},
+		},
+	}
 }

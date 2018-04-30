@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/rtt/Go-Solr"
@@ -145,7 +146,7 @@ func TestAddSuggestionTerms(t *testing.T) {
 
 	testCases := []TestCase{
 		TestCase{
-			Collection: NewSuggestionTermCollection("brand_count_i"),
+			Collection: new(SuggestionTermCollection),
 			Arguments: &Arguments{
 				Facet: solr.Facet{
 					Name: "pseudotiers_ss",
@@ -159,7 +160,7 @@ func TestAddSuggestionTerms(t *testing.T) {
 			Expected: 2,
 		},
 		TestCase{
-			Collection: NewSuggestionTermCollection("project_count_i"),
+			Collection: new(SuggestionTermCollection),
 			Arguments: &Arguments{
 				Facet: solr.Facet{
 					Name: "product_type_ent_ss",
@@ -214,7 +215,7 @@ func TestToUpdateDocuments(t *testing.T) {
 		return
 	}
 
-	stCollection := NewSuggestionTermCollection("brand_count_i")
+	stCollection := new(SuggestionTermCollection)
 	_ = stCollection.AddSuggestionTerms(
 		solr.Facet{
 			Name: "pseudotiers_ss",
@@ -250,10 +251,45 @@ func TestToUpdateDocuments(t *testing.T) {
 		expected := string(tc.ExpectedBytes)
 		if bytes.Compare(tc.ExpectedBytes, *gotBytes) != 0 {
 			t.Error(
-				"EXPECTED:\n", expected,
-				"\n",
-				"GOT:\n", got,
-				"\n",
+				"EXPECTED:\n", expected, "\n",
+				"GOT:\n", got, "\n",
+			)
+		}
+	}
+}
+
+func TestMakeFacetQuery(t *testing.T) {
+	query := MakeFacetQuery([]string{"django_ct:brands.brand"}, []string{"pseudotiers_ss"})
+
+	type TestCase struct {
+		Got      string
+		Expected string
+	}
+
+	testCases := []TestCase{
+		TestCase{
+			Got:      query.Params["q"][0],
+			Expected: "*:*",
+		},
+		TestCase{
+			Got:      query.Params["fq"][0],
+			Expected: "django_ct:brands.brand",
+		},
+		TestCase{
+			Got:      query.Params["facet.field"][0],
+			Expected: "pseudotiers_ss",
+		},
+		TestCase{
+			Got:      query.Params["facet"][0],
+			Expected: "true",
+		},
+	}
+
+	for _, tc := range testCases {
+		if strings.Compare(tc.Got, tc.Expected) != 0 {
+			t.Error(
+				"EXPECTED:", tc.Expected,
+				"GOT:", tc.Got,
 			)
 		}
 	}
