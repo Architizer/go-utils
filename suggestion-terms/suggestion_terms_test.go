@@ -258,8 +258,8 @@ func TestToUpdateDocuments(t *testing.T) {
 	}
 }
 
-func TestMakeFacetQuery(t *testing.T) {
-	query := MakeFacetQuery([]string{"django_ct:brands.brand"}, []string{"pseudotiers_ss"})
+func TesNewFacetQuery(t *testing.T) {
+	query := NewFacetQuery([]string{"django_ct:brands.brand"}, []string{"pseudotiers_ss"})
 
 	type TestCase struct {
 		Got      string

@@ -75,9 +75,9 @@ func (collection *SuggestionTermCollection) ToUpdateDocument() map[string]interf
 	return payload
 }
 
-// MakeFacetQuery constructs a Solr facet query
-func MakeFacetQuery(fq []string, facetField []string) solr.Query {
-	return solr.Query{
+// NewFacetQuery constructs a Solr facet query
+func NewFacetQuery(fq []string, facetField []string) *solr.Query {
+	return &solr.Query{
 		Params: solr.URLParamMap{
 			"q":           []string{"*:*"},
 			"fq":          fq,
