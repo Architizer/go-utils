@@ -5,40 +5,80 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version
       - image: circleci/golang:1.10
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
+    working_directory: /go/src/github.com/Architizer/go-utils
+    steps:
+      - checkout
+      - run:
+          name: download dependencies
+          command: go get -v github.com/rtt/Go-Solr
+      - run:
+          name: build packages
+          working_directory: /go/src/github.com/Architizer/go-utils
+          command: |
+            go build -v github.com/Architizer/go-utils/suggestion-terms
+      - run:
+          name: install packages
+          command: |
+            go install -v github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
 
-    #### TEMPLATE_NOTE: go expects specific checkout path representing url
-    #### expecting it in the form of
-    ####   /go/src/github.com/circleci/go-tool
-    ####   /go/src/bitbucket.org/circleci/go-tool
+  lint:
+    docker:
+      - image: circleci/golang:1.10
     working_directory: /go/src/github.com/Architizer/go-utils
     steps:
       - checkout
 
-      # specify any bash command here prefixed with `run: `
+      - run:
+          name: download dependencies
+          command: go get -u golang.org/x/lint/golint
+
+      - run: golint
+
+  test:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/Architizer/go-utils
+    steps:
+      - checkout
+
       - run:
           name: download dependencies
           command: |
-            go get -u golang.org/x/lint/golint
             go get -v github.com/rtt/Go-Solr
-
-      - run: 
-          name: lint
-          command: |
-            golint
       
-      - build:
-          name: build + install packages
-            go build -v github.com/Architizer/go-utils/suggestion-terms
-            go install -v github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
-
+      - run: go test github.com/Architizer/go-utils/suggestion-terms
+  
+  push_suggestion_terms_image:
+    docker:
+      - image: docker
+    working_directory: /go/src/github.com/Architizer/go-utils
+    steps:
+      - setup_remote_docker
+      - checkout
       - run:
-          name: test
-          command: |
-            go test -v github.com/Architizer/go-utils/suggestion-terms
+          name: Build Docker image
+          working_directory: /go/src/github.com/Architizer/go-utils/suggestion-terms
+          command: docker build -t architizer/update-suggestion-terms .
+      - run:
+          name: Login to Dockerhub
+          command: echo $HUB_PASSWORD | docker login -u $HUB_USERNAME --password-stdin
+      - run:
+          name: Push image to Docker hub
+          command: docker push architizer/update-suggestion-terms
+
+workflows:
+  version: 2
+  suggestion_terms:
+    jobs:
+      - build
+      - lint
+      - test
+      - push_suggestion_terms_image:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
