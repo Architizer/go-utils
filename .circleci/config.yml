@@ -32,6 +32,11 @@ jobs:
           name: lint
           command: |
             golint
+      
+      - build:
+          name: build + install packages
+            go build -v github.com/Architizer/go-utils/suggestion-terms
+            go install -v github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
 
       - run:
           name: test
