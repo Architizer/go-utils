@@ -218,7 +218,7 @@ func TestToUpdateDocuments(t *testing.T) {
 	}
 
 	stCollection := new(SuggestionTermCollection)
-	_ = stCollection.AddSuggestionTerms(
+	stCollection.AddSuggestionTerms(
 		solr.Facet{
 			Name: "pseudotiers_ss",
 			Counts: []solr.FacetCount{
