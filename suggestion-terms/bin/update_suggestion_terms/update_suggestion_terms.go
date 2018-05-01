@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Architizer/go-utils/suggestion-terms"
@@ -26,6 +25,22 @@ func main() {
 		fmt.Println("weightField must have suffix '_i'")
 		return
 	}
+	if len(*hostPtr) == 0 {
+		fmt.Println("Invalid hostname (must be length >= 1)")
+	}
+	if *portPtr <= 0 || *portPtr > 65535 {
+		fmt.Println("Invalid port (must be 1..65535")
+	}
+
+	var sourceURL string
+	var targetURL string
+	if *portPtr == 80 {
+		sourceURL = fmt.Sprintf("%s/solr/%s", *hostPtr, *sourcePtr)
+		targetURL = fmt.Sprintf("%s/solr/%s", *hostPtr, *targetPtr)
+	} else {
+		sourceURL = fmt.Sprintf("%s:%d/solr/%s", *hostPtr, *portPtr, *sourcePtr)
+		targetURL = fmt.Sprintf("%s:%d/solr/%s", *hostPtr, *portPtr, *targetPtr)
+	}
 
 	// Build query object
 	q := suggestionterms.NewFacetQuery(
@@ -34,12 +49,7 @@ func main() {
 	)
 
 	// Init a connection
-	conn, err := solr.Init(*hostPtr, *portPtr, *sourcePtr)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	conn := solr.Connection{URL: sourceURL}
 
 	// Perform the query, checking for errors
 	res, err := conn.Select(q)
@@ -57,17 +67,13 @@ func main() {
 	}
 
 	// Init a connection
-	s, err := solr.Init(*hostPtr, *portPtr, *targetPtr)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	conn = solr.Connection{URL: targetURL}
 
 	// Build update document
 	doc := collection.ToUpdateDocument()
 
 	// Send off the update
-	resp, err := s.Update(doc, true)
+	resp, err := conn.Update(doc, true)
 
 	if err != nil {
 		fmt.Println("error =>", err)
