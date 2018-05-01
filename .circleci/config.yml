@@ -11,7 +11,10 @@ jobs:
       - checkout
       - run:
           name: download dependencies
-          command: go get -v github.com/rtt/Go-Solr
+          command: |
+            go get -v \
+              github.com/rtt/Go-Solr \
+              github.com/getsentry/raven-go
       - run:
           name: build packages
           working_directory: /go/src/github.com/Architizer/go-utils
@@ -45,7 +48,9 @@ jobs:
       - run:
           name: download dependencies
           command: |
-            go get -v github.com/rtt/Go-Solr
+            go get -v \
+              github.com/rtt/Go-Solr \
+              github.com/getsentry/raven-go
       
       - run: go test github.com/Architizer/go-utils/suggestion-terms
   
