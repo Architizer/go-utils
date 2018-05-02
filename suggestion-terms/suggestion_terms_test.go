@@ -12,28 +12,33 @@ import (
 
 func TestNewSuggestionTerm(t *testing.T) {
 	type TestCase struct {
-		Got                 *SuggestionTerm
-		ExpectedValue       string
-		ExpectedWeightField string
+		Got                  *SuggestionTerm
+		ExpectedValue        string
+		ExpectedWeightField  string
+		ExpectedSuggestField string
 	}
 	testCases := []TestCase{
 		TestCase{
 			Got: NewSuggestionTerm(
 				"pseudotiers_ss",
 				solr.FacetCount{Value: "Furniture - Contract", Count: 300},
-				"brand_count_i",
+				"",
+				"",
 			),
-			ExpectedValue:       "furniture - contract",
-			ExpectedWeightField: "brand_count_i",
+			ExpectedValue:        "furniture - contract",
+			ExpectedWeightField:  DefaultWeightField,
+			ExpectedSuggestField: DefaultSuggestField,
 		},
 		TestCase{
 			Got: NewSuggestionTerm(
 				"product_type_ent_ss",
 				solr.FacetCount{Value: "emergency lights", Count: 300},
-				"project_count_i",
+				"brand_count_i",
+				"suggest_s",
 			),
-			ExpectedValue:       "emergency lights",
-			ExpectedWeightField: "project_count_i",
+			ExpectedValue:        "emergency lights",
+			ExpectedWeightField:  "brand_count_i",
+			ExpectedSuggestField: "suggest_s",
 		},
 	}
 	for _, tc := range testCases {
@@ -67,6 +72,7 @@ func TestDocumentID(t *testing.T) {
 				"pseudotiers_ss",
 				solr.FacetCount{Value: "Furniture - Contract", Count: 300},
 				"count_i",
+				"text",
 			),
 			Expected: "pseudotiers_ss.furniture - contract",
 		},
@@ -75,6 +81,7 @@ func TestDocumentID(t *testing.T) {
 				"product_type_ent_ss",
 				solr.FacetCount{Value: "emergency lights", Count: 300},
 				"count_i",
+				"text",
 			),
 			Expected: "product_type_ent_ss.emergency lights",
 		},
@@ -101,7 +108,7 @@ func TestNewDocument(t *testing.T) {
 
 	testCases := []TestCase{
 		TestCase{
-			Got: SuggestionTerm{"pseudotiers_ss", "lighting", 100, ""},
+			Got: *NewSuggestionTerm("pseudotiers_ss", solr.FacetCount{Value: "Lighting", Count: 300}, "", ""),
 			Expected: &solr.Document{
 				Fields: map[string]interface{}{
 					"id":      "pseudotiers_ss.lighting",
@@ -111,7 +118,7 @@ func TestNewDocument(t *testing.T) {
 			},
 		},
 		TestCase{
-			Got: SuggestionTerm{"product_type_ent_ss", "wood doors", 100, ""},
+			Got: *NewSuggestionTerm("product_type_ent_ss", solr.FacetCount{Value: "Wood doors", Count: 300}, "", ""),
 			Expected: &solr.Document{
 				Fields: map[string]interface{}{
 					"id":     "product_type_ent_ss.wood doors",
@@ -135,8 +142,9 @@ func TestNewDocument(t *testing.T) {
 
 func TestAddSuggestionTerms(t *testing.T) {
 	type Arguments struct {
-		Facet       solr.Facet
-		WeightField string
+		Facet        solr.Facet
+		WeightField  string
+		SuggestField string
 	}
 	type TestCase struct {
 		Collection *SuggestionTermCollection
@@ -155,7 +163,8 @@ func TestAddSuggestionTerms(t *testing.T) {
 						solr.FacetCount{Value: "Stone", Count: 100},
 					},
 				},
-				WeightField: "brand_count_i",
+				WeightField:  "brand_count_i",
+				SuggestField: "text",
 			},
 			Expected: 2,
 		},
@@ -170,14 +179,15 @@ func TestAddSuggestionTerms(t *testing.T) {
 						solr.FacetCount{Value: "window trim", Count: 100},
 					},
 				},
-				WeightField: "project_count_i",
+				WeightField:  "project_count_i",
+				SuggestField: "text",
 			},
 			Expected: 3,
 		},
 	}
 
 	for _, tc := range testCases {
-		tc.Collection.AddSuggestionTerms(tc.Arguments.Facet, tc.Arguments.WeightField)
+		tc.Collection.AddSuggestionTerms(tc.Arguments.Facet, tc.Arguments.WeightField, "")
 		got := len(tc.Collection.SuggestionTerms)
 		if got != tc.Expected {
 			t.Error(
@@ -198,16 +208,16 @@ func TestToUpdateDocuments(t *testing.T) {
 	expectedBytes, err := json.Marshal(map[string]interface{}{
 		"add": []interface{}{
 			map[string]interface{}{
-				"id":            "pseudotiers_ss.lighting",
-				"term_s":        map[string]string{"set": "lighting"},
-				"term_type_s":   map[string]string{"set": "pseudotiers_ss"},
-				"brand_count_i": map[string]int{"set": 100},
+				"id":                "pseudotiers_ss.lighting",
+				DefaultSuggestField: map[string]string{"set": "lighting"},
+				"term_type_s":       map[string]string{"set": "pseudotiers_ss"},
+				"brand_count_i":     map[string]int{"set": 100},
 			},
 			map[string]interface{}{
-				"id":            "pseudotiers_ss.plumbing",
-				"term_s":        map[string]string{"set": "plumbing"},
-				"term_type_s":   map[string]string{"set": "pseudotiers_ss"},
-				"brand_count_i": map[string]int{"set": 100},
+				"id":                "pseudotiers_ss.plumbing",
+				DefaultSuggestField: map[string]string{"set": "plumbing"},
+				"term_type_s":       map[string]string{"set": "pseudotiers_ss"},
+				"brand_count_i":     map[string]int{"set": 100},
 			},
 		},
 	})
@@ -233,6 +243,7 @@ func TestToUpdateDocuments(t *testing.T) {
 			},
 		},
 		"brand_count_i",
+		DefaultSuggestField,
 	)
 
 	testCases := []TestCase{
