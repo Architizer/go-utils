@@ -48,14 +48,13 @@ func (st *SuggestionTerm) NewDocument() *solr.Document {
 // AddSuggestionTerms adds SuggestionTerms to a SuggestionTermCollection
 // facet: solr.Facet to create suggestion terms from
 // weightField: Name of weight field on Solr document
-func (collection *SuggestionTermCollection) AddSuggestionTerms(facet solr.Facet, weightField string) error {
+func (collection *SuggestionTermCollection) AddSuggestionTerms(facet solr.Facet, weightField string) {
 	var facetCount solr.FacetCount
 	for i := 0; i < len(facet.Counts); i++ {
 		facetCount = facet.Counts[i]
 		st := NewSuggestionTerm(facet.Name, facetCount, weightField)
 		collection.SuggestionTerms = append(collection.SuggestionTerms, *st)
 	}
-	return nil
 }
 
 // ToUpdateDocument converts SuggestionTerms into a payload for solr.Connection.Update

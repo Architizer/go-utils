@@ -3,7 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"strings"
+
+	"github.com/getsentry/raven-go"
 
 	"github.com/Architizer/go-utils/suggestion-terms"
 	"github.com/rtt/Go-Solr"
@@ -20,16 +23,22 @@ func main() {
 
 	flag.Parse()
 
+	var err error
 	// Validate args
 	if strings.HasSuffix(*weightFieldPtr, string("_i")) != true {
-		fmt.Println("weightField must have suffix '_i'")
-		return
+		err = fmt.Errorf("weightField must have suffix '_i'")
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 	if len(*hostPtr) == 0 {
-		fmt.Println("Invalid hostname (must be length >= 1)")
+		err = fmt.Errorf("Invalid hostname (must be length >= 1)")
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 	if *portPtr <= 0 || *portPtr > 65535 {
-		fmt.Println("Invalid port (must be 1..65535")
+		err = fmt.Errorf("Invalid port (must be 1..65535")
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 
 	var sourceURL string
@@ -55,8 +64,8 @@ func main() {
 	res, err := conn.Select(q)
 
 	if err != nil {
-		fmt.Println(err)
-		return
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 
 	// Convert facets to SuggestionTerms
@@ -76,7 +85,8 @@ func main() {
 	resp, err := conn.Update(doc, true)
 
 	if err != nil {
-		fmt.Println("error =>", err)
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	} else {
 		fmt.Println("resp =>", resp)
 	}

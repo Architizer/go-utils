@@ -5,7 +5,15 @@ Go package that builds Solr documents from facet queries for a collection devote
 go install github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
 ```
 
+## Download dependencies
+```
+go get github.com/rtt/Go-Solr
+```
+
 ## Usage
+Command to update suggestion terms is `update_suggestion_terms`.
+
+Arguments:
 ```
   -facetfield string
         Field to facet on (default "pseudotiers_ss")
