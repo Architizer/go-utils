@@ -13,12 +13,13 @@ import (
 )
 
 func main() {
-	hostPtr := flag.String("host", "localhost", "solr host")
+	hostPtr := flag.String("host", "http://localhost", "solr host")
 	portPtr := flag.Int("port", 8983, "solr port")
 	sourcePtr := flag.String("source", "product_source", "Source colllection to facet terms from.")
 	targetPtr := flag.String("target", "suggestion_terms", "Target collection to update terms on.")
 	fqPtr := flag.String("fq", "django_ct:brands.brand", "'fq' param for facet query.")
 	facetFieldPtr := flag.String("facetfield", "pseudotiers_ss", "Field to facet on")
+	suggestFieldPtr := flag.String("suggestField", "term_t", "Field to store facet value on")
 	weightFieldPtr := flag.String("weightfield", "count_i", "Name of weight field. Must have '_i'.")
 
 	flag.Parse()
@@ -72,7 +73,7 @@ func main() {
 	facets := res.Results.Facets
 	collection := new(suggestionterms.SuggestionTermCollection)
 	for _, facet := range facets {
-		collection.AddSuggestionTerms(facet, *weightFieldPtr)
+		collection.AddSuggestionTerms(facet, *weightFieldPtr, *suggestFieldPtr)
 	}
 
 	// Init a connection
