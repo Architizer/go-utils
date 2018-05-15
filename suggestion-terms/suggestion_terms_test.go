@@ -40,6 +40,17 @@ func TestNewSuggestionTerm(t *testing.T) {
 			ExpectedWeightField:  "brand_count_i",
 			ExpectedSuggestField: "suggest_s",
 		},
+		TestCase{
+			Got: NewSuggestionTerm(
+				"name_s",
+				solr.FacetCount{Value: "duravit", Count: 1},
+				"",
+				"",
+			),
+			ExpectedValue:	"duravit",
+		    ExpectedWeightField:  DefaultWeightField,
+		    ExpectedSuggestField: DefaultSuggestField,
+		},
 	}
 	for _, tc := range testCases {
 		if tc.Got.Value != tc.ExpectedValue {
@@ -85,6 +96,15 @@ func TestDocumentID(t *testing.T) {
 			),
 			Expected: "product_type_ent_ss.emergency lights",
 		},
+		TestCase{
+		Got: *NewSuggestionTerm(
+			"name_s",
+			solr.FacetCount{Value: "duravit", Count: 1},
+			"count_i",
+			"text",
+		),
+		Expected: "name_s.duravit",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -123,6 +143,15 @@ func TestNewDocument(t *testing.T) {
 				Fields: map[string]interface{}{
 					"id":     "product_type_ent_ss.wood doors",
 					"term_s": "wood doors",
+				},
+			},
+		},
+		TestCase{
+			Got: *NewSuggestionTerm("name_s", solr.FacetCount{Value: "duravit", Count: 1}, "", ""),
+			Expected: &solr.Document{
+				Fields: map[string]interface{}{
+					"id":     "name_s.duravit",
+					"term_s": "dura",
 				},
 			},
 		},
@@ -180,6 +209,22 @@ func TestAddSuggestionTerms(t *testing.T) {
 					},
 				},
 				WeightField:  "project_count_i",
+				SuggestField: "text",
+			},
+			Expected: 3,
+		},
+		TestCase{
+			Collection: new(SuggestionTermCollection),
+			Arguments: &Arguments{
+				Facet: solr.Facet{
+					Name: "name_s",
+					Counts: []solr.FacetCount{
+						solr.FacetCount{Value: "duravit", Count: 1},
+						solr.FacetCount{Value: "toto", Count: 1},
+						solr.FacetCount{Value: "kohler", Count: 1},
+					},
+				},
+				WeightField:  "brand_count_i",
 				SuggestField: "text",
 			},
 			Expected: 3,

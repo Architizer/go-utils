@@ -15,7 +15,7 @@ import (
 func main() {
 	hostPtr := flag.String("host", "http://localhost", "solr host")
 	portPtr := flag.Int("port", 8983, "solr port")
-	sourcePtr := flag.String("source", "product_source", "Source colllection to facet terms from.")
+	sourcePtr := flag.String("source", "product_source", "Source collection to facet terms from.")
 	targetPtr := flag.String("target", "suggestion_terms", "Target collection to update terms on.")
 	fqPtr := flag.String("fq", "django_ct:brands.brand", "'fq' param for facet query.")
 	facetFieldPtr := flag.String("facetfield", "pseudotiers_ss", "Field to facet on")
