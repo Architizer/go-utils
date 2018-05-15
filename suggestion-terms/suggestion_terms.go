@@ -97,6 +97,7 @@ func NewFacetQuery(fq []string, facetField []string) *solr.Query {
 			"facet.field": facetField,
 			"facet":       []string{"true"},
 			"facet.limit": []string{"-1"},
+			"facet.mincount": []string{"1"},
 		},
 	}
 }
