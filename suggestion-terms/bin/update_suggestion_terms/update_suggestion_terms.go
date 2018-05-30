@@ -12,7 +12,7 @@ import (
 	"github.com/rtt/Go-Solr"
 )
 
-func main() {
+func executeCommand() {
 	hostPtr := flag.String("host", "http://localhost", "solr host")
 	portPtr := flag.Int("port", 8983, "solr port")
 	sourcePtr := flag.String("source", "product_source", "Source collection to facet terms from.")
@@ -91,5 +91,8 @@ func main() {
 	} else {
 		fmt.Println("resp =>", resp)
 	}
+}
 
+func main() {
+	raven.CapturePanic(executeCommand, nil)
 }
