@@ -13,8 +13,7 @@ import (
 )
 
 func executeCommand() {
-	hostPtr := flag.String("host", "http://localhost", "solr host")
-	portPtr := flag.Int("port", 8983, "solr port")
+	urlPtr := flag.String("url", "http://localhost:8983", "solr url")
 	sourcePtr := flag.String("source", "product_source", "Source collection to facet terms from.")
 	targetPtr := flag.String("target", "suggestion_terms", "Target collection to update terms on.")
 	fqPtr := flag.String("fq", "django_ct:brands.brand", "'fq' param for facet query.")
@@ -31,26 +30,9 @@ func executeCommand() {
 		raven.CaptureErrorAndWait(err, nil)
 		log.Panic(err)
 	}
-	if len(*hostPtr) == 0 {
-		err = fmt.Errorf("Invalid hostname (must be length >= 1)")
-		raven.CaptureErrorAndWait(err, nil)
-		log.Panic(err)
-	}
-	if *portPtr <= 0 || *portPtr > 65535 {
-		err = fmt.Errorf("Invalid port (must be 1..65535")
-		raven.CaptureErrorAndWait(err, nil)
-		log.Panic(err)
-	}
 
-	var sourceURL string
-	var targetURL string
-	if *portPtr == 80 {
-		sourceURL = fmt.Sprintf("%s/solr/%s", *hostPtr, *sourcePtr)
-		targetURL = fmt.Sprintf("%s/solr/%s", *hostPtr, *targetPtr)
-	} else {
-		sourceURL = fmt.Sprintf("%s:%d/solr/%s", *hostPtr, *portPtr, *sourcePtr)
-		targetURL = fmt.Sprintf("%s:%d/solr/%s", *hostPtr, *portPtr, *targetPtr)
-	}
+	sourceURL := fmt.Sprintf("%s/solr/%s", *urlPtr, *sourcePtr)
+	targetURL := fmt.Sprintf("%s/solr/%s", *urlPtr, *targetPtr)
 
 	// Build query object
 	q := suggestionterms.NewFacetQuery(

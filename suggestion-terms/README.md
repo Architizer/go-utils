@@ -19,14 +19,12 @@ Arguments:
         Field to facet on (default "pseudotiers_ss")
   -fq string
         'fq' param for facet query. (default "django_ct:brands.brand")
-  -host string
-        solr host (default "localhost")
-  -port int
-        solr port (default 8983)
   -source string
         Source colllection to facet terms from. (default "product_source")
   -target string
         Target collection to update terms on. (default "suggestion_terms")
+  -url string
+      solr url (default "http://localhost:8983")
   -weightfield string
         Name of weight field. Must have '_i'. (default "count_i")
 ```
