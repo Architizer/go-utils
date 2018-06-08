@@ -24,6 +24,7 @@ jobs:
           name: install packages
           command: |
             go install -v github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
+            go install -v github.com/Architizer/go-utils/cmd/solr-delete-docs
 
   lint:
     docker:
