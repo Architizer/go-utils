@@ -5,17 +5,8 @@ Delete Solr documents from a collection given a field name and a text file conta
 go install -i github.com/Architizer/go-utils/cmd/solr-delete-docs
 ```
 
-## Usage
+## Example
 ```
-Usage of solr-delete-docs:
-  -collection string
-        Solr collection to delete documents from
-  -field string
-        Solr field to query against.
-  -file string
-        Location of file containing list of values to query against.
-  -fq string
-        fq param for Select action
-  -url string
-        Solr host url (default "http://localhost:8983")
+solr-delete-docs -file id-list.txt -collection products -url http://localhost:8983
 ```
+Deletes Solr documents from collection on localhost whose id field matches values in `id-list.txt`.
