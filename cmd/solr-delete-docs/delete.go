@@ -28,7 +28,8 @@ func MakeUpdateDocument(conn *solr.Connection, docs []solr.Document) map[string]
 	return updateDoc
 }
 
-func deleteDocuments(params solr.URLParamMap, conn *solr.Connection, done chan bool) {
+// DeleteDocuments deletes Solr documents that match a given query
+func DeleteDocuments(params solr.URLParamMap, conn *solr.Connection) {
 	q := solr.Query{
 		Params: params,
 	}
@@ -74,11 +75,9 @@ func deleteDocuments(params solr.URLParamMap, conn *solr.Connection, done chan b
 		}
 		fmt.Printf("Deleted %v documents\n", len(res.Results.Collection))
 	}
-
-	done <- true
 }
 
-// Convert lines of text into a list of Solr query params to limit request URI length.
+// MakeSolrParamsList converts lines of text into a list of Solr query params to limit request URI length.
 func MakeSolrParamsList(lines []string) []solr.URLParamMap {
 	maxLength := 500
 	solrParamsList := make([]solr.URLParamMap, 0)
@@ -137,12 +136,8 @@ func main() {
 	// Init a connection
 	conn := solr.Connection{URL: collectionURL}
 
-	// Delete documents that match params in solrParamsList
-	done := make(chan bool, 1)
 	for _, params := range paramsList {
-		go deleteDocuments(params, &conn, done)
+		DeleteDocuments(params, &conn)
 	}
-
-	<-done
 
 }

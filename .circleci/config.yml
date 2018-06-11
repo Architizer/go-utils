@@ -3,7 +3,7 @@
 # Check https://circleci.com/docs/2.0/language-go/ for more details
 version: 2
 jobs:
-  build:
+  build_suggestion_terms:
     docker:
       - image: circleci/golang:1.10
     working_directory: /go/src/github.com/Architizer/go-utils
@@ -25,6 +25,29 @@ jobs:
           command: |
             go install -v github.com/Architizer/go-utils/suggestion-terms/bin/update_suggestion_terms
             go install -v github.com/Architizer/go-utils/cmd/solr-delete-docs
+  
+  build_solr_delete_docs:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/Architizer/go-utils
+    steps:
+      - checkout
+      - run:
+          name: download dependencies
+          command: |
+            go get -v \
+              github.com/rtt/Go-Solr \
+              github.com/icrowley/fake
+
+      - run:
+          name: build packages
+          working_directory: /go/src/github.com/Architizer/go-utils
+          command: |
+            go build -v github.com/Architizer/go-utils/cmd/solr-delete-docs
+      - run:
+          name: install packages
+          command: |
+            go install -v github.com/Architizer/go-utils/cmd/solr-delete-docs
 
   lint:
     docker:
@@ -39,7 +62,7 @@ jobs:
 
       - run: golint
 
-  test:
+  test_suggestion_terms:
     docker:
       - image: circleci/golang:1.10
     working_directory: /go/src/github.com/Architizer/go-utils
@@ -54,6 +77,22 @@ jobs:
               github.com/getsentry/raven-go
       
       - run: go test github.com/Architizer/go-utils/suggestion-terms
+  
+  test_solr_delete_docs:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/Architizer/go-utils
+    steps:
+      - checkout
+
+      - run:
+          name: download dependencies
+          command: |
+            go get -v \
+              github.com/rtt/Go-Solr \
+              github.com/icrowley/fake
+
+      - run: go test github.com/Architizer/go-utils/cmd/solr-delete-docs
   
   push_suggestion_terms_image:
     docker:
@@ -75,16 +114,25 @@ jobs:
 
 workflows:
   version: 2
+
   suggestion_terms:
     jobs:
-      - build
       - lint
-      - test
+      - build_suggestion_terms
+      - test_suggestion_terms
       - push_suggestion_terms_image:
           requires:
-            - build
+            - build_suggestion_terms
             - lint
-            - test
+            - test_suggestion_terms
           filters:
             branches:
               only: master
+
+  solr_delete_docs:
+    jobs:
+      - lint
+      - build_solr_delete_docs
+      - test_solr_delete_docs
+
+

@@ -23,6 +23,8 @@ func TestMakeSolrParamsList(t *testing.T) {
 	var got []string
 	var gotLength int
 	for _, params := range paramsList {
+
+		// Test q param
 		expected = []string{"*:*"}
 		got = params["q"]
 		if len(got) != len(expected) {
@@ -31,6 +33,7 @@ func TestMakeSolrParamsList(t *testing.T) {
 				"Got: ", got,
 			)
 		}
+
 		for _, expectedVal := range expected {
 			for _, gotVal := range got {
 				if expectedVal != gotVal {
@@ -42,6 +45,7 @@ func TestMakeSolrParamsList(t *testing.T) {
 			}
 		}
 
+		// Test fq param
 		expectedLength = 1
 		gotLength = len(params["fq"])
 		if expectedLength != gotLength {
@@ -60,5 +64,28 @@ func TestMakeSolrParamsList(t *testing.T) {
 				"Got: ", gotLength,
 			)
 		}
+
+		// Test fl param
+		expected = []string{"id"}
+		got = params["fl"]
+		if len(got) != len(expected) {
+			t.Error(
+				"Expected: ", expected,
+				"Got: ", got,
+			)
+
+		}
+
+		for _, expectedVal := range expected {
+			for _, gotVal := range got {
+				if expectedVal != gotVal {
+					t.Error(
+						"Expected: ", expectedVal,
+						"Got: ", gotVal,
+					)
+				}
+			}
+		}
+
 	}
 }
